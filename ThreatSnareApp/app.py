@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = "sk_Hhishiqsio$qiost@45123"
 
 BASE_DIR = os.path.dirname(__file__)
-model_path = os.path.join(BASE_DIR, "ThreatSnareApp", "malicious_url_model.pkl")
+model_path = os.path.join(BASE_DIR, "malicious_url_model.pkl")
 
 with open(model_path, "rb") as f:
     model = pickle.load(f)
