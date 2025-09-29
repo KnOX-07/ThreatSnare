@@ -4,11 +4,15 @@ import numpy as np
 from tld import get_tld
 from urllib.parse import urlparse
 import re
+import os
 
 app = Flask(__name__)
 app.secret_key = "sk_Hhishiqsio$qiost@45123"
 
-with open("malicious_url_model.pkl", "rb") as f:
+BASE_DIR = os.path.dirname(__file__)
+model_path = os.path.join(BASE_DIR, "malicious_url_model.pkl")
+
+with open(model_path, "rb") as f:
     model = pickle.load(f)
 
 # Feature Extraction
