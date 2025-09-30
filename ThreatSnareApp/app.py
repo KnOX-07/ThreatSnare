@@ -9,12 +9,15 @@ import os
 app = Flask(__name__)
 app.secret_key = "sk_Hhishiqsio$qiost@45123"
 
-BASE_DIR = os.path.dirname(__file__)
-model_path = os.path.join(BASE_DIR, "malicious_url_model.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "malicious_url_model.pkl")
 
-with open(model_path, "rb") as f:
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
+
+with open(MODEL_PATH, "rb") as f:
     model = pickle.load(f)
-
+    
 # Feature Extraction
 def having_ip_address(url):
     match = re.search(
@@ -159,4 +162,4 @@ def index():
     return render_template("index.html", url=url, prediction=prediction)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
