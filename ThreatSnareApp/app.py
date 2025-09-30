@@ -16,6 +16,9 @@ model_path = os.path.join(BASE_DIR, "malicious_url_model.pkl")
 with open(model_path, "rb") as f:
     model = pickle.load(f)
 
+# Use tldextract in offline mode (no network calls)
+extractor = tldextract.TLDExtract(suffix_list_urls=None)
+
 # Feature Extraction
 def having_ip_address(url):
     match = re.search(
@@ -98,7 +101,7 @@ def fd_length(url):
 
 def tld_length(url):
     try:
-        ext = tldextract.extract(url)
+        ext = extractor(url)  # use offline extractor
         return len(ext.suffix) if ext.suffix else 0
     except:
         return 0
@@ -158,7 +161,11 @@ def index():
         original_label = label_map.get(int(pred_num), "UNKNOWN")
         mapped_label = map_prediction(original_label)
 
-        # Save to session and redirect
+        # Log for debugging (will appear in Render logs)
+        print(f"URL: {url}")
+        print(f"Features: {features.to_dict(orient='records')[0]}")
+        print(f"Prediction: {original_label} -> {mapped_label}")
+
         session["url"] = url
         session["prediction"] = mapped_label
         return redirect(url_for("index"))
