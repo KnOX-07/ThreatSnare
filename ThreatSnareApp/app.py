@@ -1,7 +1,8 @@
 from flask import Flask, request, render_template, redirect, url_for, session
 import pickle
 import numpy as np
-from tld import get_tld
+import pandas as pd
+import tldextract
 from urllib.parse import urlparse
 import re
 import os
@@ -97,8 +98,8 @@ def fd_length(url):
 
 def tld_length(url):
     try:
-        tld = get_tld(url, as_object=True, fix_protocol=True)
-        return len(tld.tld) if tld else 0
+        ext = tldextract.extract(url)
+        return len(ext.suffix) if ext.suffix else 0
     except:
         return 0
 
@@ -138,24 +139,21 @@ def map_prediction(pred):
         return "This site is not safe"
     else:
         return "Unknown"
-    
+
+feature_names = [
+    "having_ip_address", "abnormal_url", "count_dot", "count_www", "count_atrate",
+    "no_of_dir", "no_of_embed", "shortening_service", "count_https", "count_http",
+    "count_per", "count_ques", "count_hyphen", "count_equal", "url_length",
+    "hostname_length", "suspicious_words", "fd_length", "tld_length", "digit_count",
+    "letter_count"
+]
+
 # Flask Routes
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         url = request.form["url"]
-
-        # --- Convert features to DataFrame with proper column names ---
-        feature_names = [
-            "having_ip_address", "abnormal_url", "count_dot", "count_www", "count_atrate",
-            "no_of_dir", "no_of_embed", "shortening_service", "count_https", "count_http",
-            "count_per", "count_ques", "count_hyphen", "count_equal", "url_length",
-            "hostname_length", "suspicious_words", "fd_length", "tld_length",
-            "digit_count", "letter_count"
-        ]
         features = pd.DataFrame([extract_features(url)], columns=feature_names)
-
-        # Predict
         pred_num = model.predict(features)[0]
         original_label = label_map.get(int(pred_num), "UNKNOWN")
         mapped_label = map_prediction(original_label)
@@ -164,7 +162,7 @@ def index():
         session["url"] = url
         session["prediction"] = mapped_label
         return redirect(url_for("index"))
-    
+
     url = session.pop("url", None)
     prediction = session.pop("prediction", None)
     return render_template("index.html", url=url, prediction=prediction)
