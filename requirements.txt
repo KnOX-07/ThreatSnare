@@ -3,5 +3,5 @@ gunicorn==20.1.0
 numpy
 pandas
 scikit-learn==1.6.1
-tld
+tldextract
 lightgbm
